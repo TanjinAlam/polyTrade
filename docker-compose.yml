@@ -1,0 +1,52 @@
+version: "3"
+services:
+  polytrade-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: polytrade-backend
+    ports:
+      - "3001:3001"
+    container_name: polytrade-backend
+    volumes:
+      - /app/node_modules
+    depends_on:
+      - postgres
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_HOST=postgres
+      - APP_URL=http://localhost:3001/api
+      - POSTGRES_PORT=5432
+      - DB_TYPE=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=polytrade-backend
+      - APP_PORT=3001
+      - APP_SECRET=3QANyH2zMoHrfxqfRWTLbPM
+      - APP_EXPIRES=30
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=polytrade-backend
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data/:rw
+  polytrade-frontend:
+    build:
+      context: ./fronted
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001/api
+        - DOCK_EXPOSED_PORT=3000
+    image: polytrade-frontend
+    ports:
+      - "3000:3000"
+    container_name: polytrade-frontend
+    volumes:
+      - /app/node_modules
+    depends_on:
+      - polytrade-backend
